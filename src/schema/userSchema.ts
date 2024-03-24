@@ -4,16 +4,18 @@ interface IUser {
     fisrt_name: string;
     last_name: string;
     phone_number: number;
-    picture: string;
+    password: string;
+    picture?: string;
     address_line1: string;
-    address_line2: string;
-    postal_code: any;
+    address_line2?: string;
+    postal_code?: any;
     state: string;
     country: string;
     email: string;
     date_of_birth: Date;
     sex: "male" | "female" | string;
-    user_type: "user" | "admin"
+    user_type: "user" | "admin",
+    resetToken: string;
 }
 
 const userSchema = new Schema<IUser>({
@@ -21,6 +23,8 @@ const userSchema = new Schema<IUser>({
     last_name: {required: true, type: String},
     phone_number: {required: true, type: Number},
     picture: {required: false, type: String},
+    password: {required: true, type: String},
+    resetToken: {required: false, type: String},
     address_line1: {required: true, type: String},
     address_line2: {required: false, type: String},
     postal_code: {required: false, type: String},

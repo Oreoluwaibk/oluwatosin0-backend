@@ -10,6 +10,12 @@ export const createToken = (user: any) => {
     return token;
 }
 
+export const resetToken = (user:any) => {
+    const token = sign({...user}, privateKey as any, { expiresIn: 300 })
+
+    return token;
+}
+
 export const verifyToken = (token: any) => {
     try {
         const isVerified = verify(token, privateKey as any);
