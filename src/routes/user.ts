@@ -1,72 +1,96 @@
 import { Request, Response, Router } from "express";
 import User from "../schema/userSchema";
 import { verifyToken } from "../utils/tokens";
+import checkAuth from "../utils/authorization";
 
-const router = Router();
+const userRouter = Router();
 
-router
-.get("/", async(req: Request, res: Response) => {
-    const { Authorization } = req.headers;
-    
-    const verified = verifyToken(Authorization);
-    console.log(verified);
-    
-    if(!verified) return res.status(404).send("Unauthorized!");
+userRouter
+.get("/", checkAuth, async(req: Request, res: Response) => {
+    try {
+        const allUsers = await User.find();
 
-    const allUsers = await User.find();
-
-    res.status(200).json({
-        success: true,
-        users: allUsers 
-    })
-
+        res.status(200).json({
+            success: true,
+            users: allUsers 
+        })
+    } catch (error) {
+        res.json({
+            success: false,
+            message: `Unable to get all users, ${error.response}`
+        });
+    }
 })
-.post("/", async(req: Request, res: Response) => {
-    const { Authorization } = req.headers;
-    
-    const verified = verifyToken(Authorization);
-    
-    if(!verified) return res.status(404).send("Unauthorized!");
+.post("/", checkAuth, async(req: Request, res: Response) => {
+    try {
+        const user = await User.create({ ...req.body });
 
-    const user = await User.create({ ...req.body });
+        await user.save();
 
-    await user.save();
-
-    res.status(200).json({
-        success: true,
-        message: "User created successfully!"
-    });
+        res.status(200).json({
+            success: true,
+            message: "User created successfully!"
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            message: `Unable to create user, ${error.response}`
+        });
+    }
 })
-.put("/:id", async(req: Request, res: Response) => {
-    const { Authorization } = req.headers;
-    const { id } = req.params;
-    
-    const verified = verifyToken(Authorization);
-    
-    if(!verified) return res.status(404).send("Unauthorized!");
+.get("/:id", async(req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
 
-    const user = await User.findByIdAndUpdate(id, { ...req.body });
-    
-    await user.save();
-
-    res.status(200).json({
-        success: true,
-        message: "User updated successfully!"
-    });
+        res.status(200).json({
+            success: true,
+            user
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            message: `Unable to get user, ${error.response}`
+        });
+    }
 })
-.delete("/:id", async(req: Request, res: Response) => {
-    const { Authorization } = req.headers;
-    const { id } = req.params;
+.put("/:id", checkAuth, async(req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
     
-    const verified = verifyToken(Authorization);
-    
-    if(!verified) return res.status(404).send("Unauthorized!");
+        const user = await User.findByIdAndUpdate(id, { ...req.body });
+        
+        await user.save();
 
-    const user = await User.findByIdAndDelete(id);
-    
-    res.status(200).json({
-        success: true,
-        message: "User deleted successfully!",
-        user
-    });
+        res.status(200).json({
+            success: true,
+            message: "User updated successfully!"
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            message: `Unable to update user, ${error.response}`
+        });
+    }
 })
+.delete("/:id", checkAuth, async(req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findByIdAndDelete(id);
+        
+        res.status(200).json({
+            success: true,
+            message: "User deleted successfully!",
+            user
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            message: `Unable to get user, ${error.response}`
+        });
+    }
+})
+
+export default userRouter;

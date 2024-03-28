@@ -1,26 +1,32 @@
 import { Request, Response, Router } from "express";
 import Blog from "../schema/blogSchema";
+import checkAuth from "../utils/authorization";
 
 const blogRoute = Router();
 
 blogRoute
-.get("/", async (req: Request, res: Response) => {
-    const blogs = await Blog.find();
-    console.log("blogs", blogs);
-    
-    res.status(200).json({
-        success: true,
-        blogs
-    })
-
-})
-.post("/", async(req: Request, res: Response) => {
-    const { title, content, image } = req.body.data;
-    const { Authorization } = req.headers;
-    console.log(title, content, image);
-    
+.get("/", checkAuth, async (_, res: Response) => {
 
     try {
+        const blogs = await Blog.find();
+        console.log("blogs", blogs);
+        
+        res.status(200).json({
+            success: true,
+            blogs
+        })   
+    } catch (error) {
+        res.json({
+            success: false,
+            message: `Unable to get blogs, ${error}`
+        });
+    }
+})
+.post("/", async(req: Request, res: Response) => {
+    
+    try {
+        const { title, content, image } = req.body;
+        
         const blog = await Blog.create({
             title,
             content,
@@ -34,9 +40,11 @@ blogRoute
             blog
         })
     } catch (error) {
+        console.log(error);
+        
         res.status(500).json({
             success: false,
-            message: error || "Unable to create blog"
+            message: `unable to create blog, ${error}`
         })
     }
     

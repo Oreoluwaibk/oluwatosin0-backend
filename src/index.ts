@@ -11,15 +11,14 @@ try {
     const app: Application = express();
     connectionToDatabase();
 
-
-    app.use("/", router);
     app.use(cors({
         origin: "*"
     }))
 
-    app.use(express.json())
-    app.use(express.urlencoded({ extended: true }))
-    app.use("/blog", blogRoute)
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use("/", router);
+    // app.use("/blog", blogRoute);
 
     app.get("/", async(_, res: Response) => {
         res.send("App is currently running..")
